@@ -1,3 +1,3 @@
 const { log } = require("console");
 
-log("Hello, world!");
+log("Hell2o, world!");
