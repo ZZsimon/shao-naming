@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>邵氏取名 · 楚辞诗经 · 唐诗宋词</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ink-bg"></div>
+
+  <!-- 顶栏：收藏夹入口 -->
+  <div class="topbar">
+    <button id="favOpenBtn" class="fav-open-btn">
+      <span class="heart">♥</span> 收藏夹 <span class="fav-count" id="favCount">0</span>
+    </button>
+  </div>
+
+  <main class="container">
+    <header class="hero">
+      <div class="seal">邵</div>
+      <h1 class="title">邵氏取名</h1>
+      <p class="subtitle">楚辞诗经 · 唐诗宋词　｜　三字佳名，平仄相谐</p>
+    </header>
+
+    <section class="panel">
+      <div class="field">
+        <span class="field-label">孩子性别</span>
+        <div class="seg" data-group="gender">
+          <button class="seg-btn active" data-value="boy">男孩</button>
+          <button class="seg-btn" data-value="girl">女孩</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">名字来源</span>
+        <div class="seg" data-group="source">
+          <button class="seg-btn active" data-value="chuci_shijing">楚辞诗经</button>
+          <button class="seg-btn" data-value="tang_song">唐诗宋词</button>
+          <button class="seg-btn" data-value="zhongyao">中药名</button>
+        </div>
+      </div>
+
+      <button id="drawBtn" class="draw-btn">取 名</button>
+      <p class="hint" id="poolHint"></p>
+    </section>
+
+    <!-- 结果卡片 -->
+    <section class="result" id="result" hidden>
+      <div class="name-card" id="nameCard">
+        <button class="fav-toggle" id="favToggle" title="收藏此名">♡</button>
+        <div class="name-vertical" id="nameVertical"></div>
+        <div class="name-info">
+          <div class="pingze-row" id="pingzeRow"></div>
+          <blockquote class="quote">
+            <p class="line" id="line"></p>
+            <cite id="book"></cite>
+          </blockquote>
+          <p class="meaning" id="meaning"></p>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button id="againBtn" class="ghost-btn">再取一个</button>
+        <button id="listBtn" class="ghost-btn">查看全部候选</button>
+      </div>
+    </section>
+
+    <!-- 全部候选列表 -->
+    <section class="all-list" id="allList" hidden>
+      <h2 class="list-title">候选佳名</h2>
+      <div class="list-grid" id="listGrid"></div>
+    </section>
+
+    <footer class="foot">
+      <p>音律说明：「邵 shào」为去声，属 <b class="ze">仄</b>。<b class="ping">平</b>声扬、<b class="ze">仄</b>声抑，平仄相间则名读来抑扬有致。</p>
+    </footer>
+  </main>
+
+  <!-- 收藏夹抽屉 -->
+  <div class="drawer-mask" id="drawerMask" hidden></div>
+  <aside class="drawer" id="favDrawer" hidden>
+    <div class="drawer-head">
+      <h2>我的收藏 <span class="fav-count" id="favCount2">0</span></h2>
+      <button class="drawer-close" id="favCloseBtn">×</button>
+    </div>
+    <p class="drawer-tip">勾选 2&ndash;4 个名字即可进行对比。</p>
+    <div class="drawer-actions">
+      <button id="compareBtn" class="ghost-btn small" disabled>对比所选 <span id="selCount">0</span></button>
+      <button id="clearFavBtn" class="ghost-btn small danger">清空收藏</button>
+    </div>
+    <div class="fav-list" id="favList"></div>
+    <p class="fav-empty" id="favEmpty">收藏夹还是空的，去取几个心仪的名字吧。</p>
+  </aside>
+
+  <!-- 对比弹窗 -->
+  <div class="modal-mask" id="compareMask" hidden>
+    <div class="modal" id="compareModal">
+      <div class="modal-head">
+        <h2>名字对比</h2>
+        <button class="drawer-close" id="compareCloseBtn">×</button>
+      </div>
+      <div class="compare-wrap">
+        <table class="compare-table" id="compareTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
