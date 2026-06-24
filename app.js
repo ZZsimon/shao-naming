@@ -5,10 +5,19 @@ const STORE_KEY = "shao_naming_favs";
 const state = {
   gender: "boy",
   source: "chuci_shijing",
+  style: STYLES.boy[0],
   current: null,        // 当前展示的名字对象
   favs: loadFavs(),     // 收藏的 id 列表（有序）
   selected: new Set(),  // 收藏夹中勾选用于对比的 id
 };
+
+const LABELS = {
+  gender: { boy: "男孩", girl: "女孩" },
+  source: { chuci_shijing: "楚辞诗经", tang_song: "唐诗宋词", zhongyao: "中药名" },
+};
+function labelOf(group, value) {
+  return (LABELS[group] && LABELS[group][value]) || value;
+}
 
 const els = {
   poolHint: document.getElementById("poolHint"),
@@ -19,6 +28,7 @@ const els = {
   book: document.getElementById("book"),
   meaning: document.getElementById("meaning"),
   favToggle: document.getElementById("favToggle"),
+  styleSeg: document.getElementById("styleSeg"),
   allList: document.getElementById("allList"),
   listGrid: document.getElementById("listGrid"),
   // 收藏
@@ -41,7 +51,7 @@ const els = {
 
 /* ---------- 工具 ---------- */
 function idOf(item) {
-  return `${item.source}_${item.gender}_${item.name}`;
+  return `${item.gender}_${item.source}_${item.name}`;
 }
 function findById(id) {
   return NAMES.find((n) => idOf(n) === id);
@@ -60,24 +70,40 @@ function saveFavs() {
     localStorage.setItem(STORE_KEY, JSON.stringify(state.favs));
   } catch {}
 }
-function labelOf(group, value) {
-  const map = {
-    gender: { boy: "男孩", girl: "女孩" },
-    source: { chuci_shijing: "楚辞诗经", tang_song: "唐诗宋词", zhongyao: "中药名" },
-  };
-  return map[group][value];
-}
-
 /* ---------- 取名核心 ---------- */
 function getPool() {
   return NAMES.filter(
-    (n) => n.gender === state.gender && n.source === state.source
+    (n) =>
+      n.gender === state.gender &&
+      n.source === state.source &&
+      n.style === state.style
   );
 }
 
 function updateHint() {
   const n = getPool().length;
-  els.poolHint.textContent = `当前「${labelOf("gender", state.gender)} · ${labelOf("source", state.source)}」共有 ${n} 个佳名候选`;
+  els.poolHint.textContent = `当前「${labelOf("gender", state.gender)} · ${labelOf("source", state.source)} · ${state.style}」共有 ${n} 个佳名候选`;
+}
+
+/* ---------- 风格分段（随性别变化） ---------- */
+function renderStyleSeg() {
+  const list = STYLES[state.gender] || [];
+  if (!list.includes(state.style)) state.style = list[0];
+  els.styleSeg.innerHTML = list
+    .map(
+      (st) =>
+        `<button class="seg-btn ${st === state.style ? "active" : ""}" data-value="${st}">${st}</button>`
+    )
+    .join("");
+  els.styleSeg.querySelectorAll(".seg-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      els.styleSeg.querySelectorAll(".seg-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.style = btn.dataset.value;
+      updateHint();
+      if (!els.allList.hidden) renderAll();
+    });
+  });
 }
 
 function renderName(item) {
@@ -256,16 +282,7 @@ function renderFavList() {
     d.addEventListener("click", () => {
       const item = findById(d.dataset.open);
       if (item) {
-        // 切换到对应来源/性别，便于上下文一致
-        state.gender = item.gender;
-        state.source = item.source;
-        document.querySelectorAll('.seg[data-group="gender"] .seg-btn').forEach((b) =>
-          b.classList.toggle("active", b.dataset.value === item.gender)
-        );
-        document.querySelectorAll('.seg[data-group="source"] .seg-btn').forEach((b) =>
-          b.classList.toggle("active", b.dataset.value === item.source)
-        );
-        updateHint();
+        setControls(item.gender, item.source, item.style);
         renderName(item);
         closeDrawer();
         els.result.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -319,10 +336,6 @@ function openCompare() {
     })
     .join("")}</tr>`;
 
-  const rowSource = `<tr><th class="row-label">来源</th>${items
-    .map((n) => `<td>${labelOf("source", n.source)}</td>`)
-    .join("")}</tr>`;
-
   const rowLine = `<tr><th class="row-label">出处</th>${items
     .map((n) => `<td><div class="cmp-line">${n.line}</div><div class="cmp-book">${n.book}</div></td>`)
     .join("")}</tr>`;
@@ -331,21 +344,42 @@ function openCompare() {
     .map((n) => `<td class="cmp-meaning">${n.meaning}</td>`)
     .join("")}</tr>`;
 
-  els.compareTable.innerHTML = head + rowName + rowPingze + rowSource + rowLine + rowMeaning;
+  els.compareTable.innerHTML = head + rowName + rowPingze + rowLine + rowMeaning;
   els.compareMask.hidden = false;
 }
 function closeCompare() {
   els.compareMask.hidden = true;
 }
 
+/* ---------- 控件同步 ---------- */
+function setControls(gender, source, style) {
+  state.gender = gender;
+  state.source = source;
+  document.querySelectorAll('.seg[data-group="gender"] .seg-btn').forEach((b) =>
+    b.classList.toggle("active", b.dataset.value === gender)
+  );
+  document.querySelectorAll('.seg[data-group="source"] .seg-btn').forEach((b) =>
+    b.classList.toggle("active", b.dataset.value === source)
+  );
+  renderStyleSeg();
+  if (style && STYLES[gender].includes(style)) {
+    state.style = style;
+    els.styleSeg.querySelectorAll(".seg-btn").forEach((b) =>
+      b.classList.toggle("active", b.dataset.value === style)
+    );
+  }
+  updateHint();
+}
+
 /* ---------- 事件绑定 ---------- */
-document.querySelectorAll(".seg").forEach((seg) => {
+document.querySelectorAll('.seg[data-group="gender"], .seg[data-group="source"]').forEach((seg) => {
   const group = seg.dataset.group;
   seg.querySelectorAll(".seg-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       seg.querySelectorAll(".seg-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       state[group] = btn.dataset.value;
+      if (group === "gender") renderStyleSeg(); // 性别变 → 风格选项随之更新
       updateHint();
       if (!els.allList.hidden) renderAll();
     });
@@ -384,5 +418,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+renderStyleSeg();
 updateHint();
 refreshFavUI();

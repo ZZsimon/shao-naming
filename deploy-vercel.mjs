@@ -21,7 +21,7 @@ if (!TOKEN) {
 }
 
 // 站点所需文件（不含本脚本与 README）
-const FILES = ["index.html", "styles.css", "app.js", "data.js"];
+const FILES = ["index.html", "styles.css", "app.js", "data.js", "vercel.json"];
 
 const API = "https://api.vercel.com";
 const authHeaders = { Authorization: `Bearer ${TOKEN}` };

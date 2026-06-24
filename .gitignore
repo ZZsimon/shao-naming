@@ -5,3 +5,7 @@ node_modules/
 npm-debug.log*
 .env
 .env.*
+
+# 本地认证脚本与令牌，切勿提交
+.askpass.sh
+.gitauth
